@@ -1,0 +1,20 @@
+{
+	"receivedDate": "/Date(1659970800000)/",
+	"contractNo": "0000000301",
+	"contractNameKnj": "宮原　環",
+	"contractEmail": "ichainbase.test02@gmail.com",
+	"documentsList": [
+		{
+			"documentTitle": "file1.jpg",
+			"documentUrl": "maintenance_documents/1_MTQ4MjMxODA4NTkzNC5naWY="
+		},
+		{
+			"documentTitle": "file2.xlsx",
+			"documentUrl": "maintenance_documents/2_MTQ4MjMxODA4NTkzNC5naWY="
+		},
+		{
+			"documentTitle": "file3.pdf",
+			"documentUrl": "maintenance_documents/3_MTQ4MjMxODA4NTkzNC5naWY="
+		}
+	]
+}

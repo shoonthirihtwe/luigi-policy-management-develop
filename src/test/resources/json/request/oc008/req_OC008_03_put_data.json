@@ -1,0 +1,20 @@
+{
+	"requestNo": "0000000000000000000003",
+	"communicationColumn":  "受取人名が不鮮明です。",
+	"firstAssessmentResults": "02",
+	"commentUnderweiter1": "不備あり",
+	"updateCount": 1,
+	"beneficiariesList": [
+		{
+			"roleType": "BD",
+			"corporateIndividualFlag": "1",
+			"nameKanaSei": "ウケトリニンコジンフセンメイ",
+			"nameKanaMei": "イチノイチ",
+			"nameKnjSei": "受取人個人不鮮明",
+			"nameKnjMei": "一之一",
+			"share": 100,
+			"relShipToInsured": "04",
+			"roleSequenceNo": 1
+		}
+	]
+}

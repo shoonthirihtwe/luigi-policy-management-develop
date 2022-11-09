@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.ichain.luigi2.mapper.ManagementOc006Mapper">
+	<select id="selectMaintenanceRequestsCorporateIndividualFlag" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			(SELECT corporate_individual_flag FROM maintenance_requests_customer WHERE tenant_id=mr.tenant_id AND request_no=mr.request_no AND before_after='A' AND role='PH' ) as contractor_corporate_individual_flag
+		    ,(SELECT corporate_individual_flag FROM maintenance_requests_customer WHERE tenant_id=mr.tenant_id AND request_no=mr.request_no AND before_after='A' AND role='PG' ) as contractor_guardian_corporate_individual_flag
+		    ,(SELECT corporate_individual_flag FROM maintenance_requests_customer WHERE tenant_id=mr.tenant_id AND request_no=mr.request_no AND before_after='A' AND role='IN' ) as insured_corporate_individual_flag
+		    ,(SELECT corporate_individual_flag FROM maintenance_requests_customer WHERE tenant_id=mr.tenant_id AND request_no=mr.request_no AND before_after='A' AND role='IG' ) as insured_guardian_corporate_individual_flag
+		FROM maintenance_requests mr
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+	<select id="selectCustomerFlag" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			mcu.contractor_customer_id
+			,mcu.contractor_corporate_individual_flag
+			,mcu.contractor_guardian_id
+		    ,(SELECT corporate_individual_flag FROM customers WHERE tenant_id=mcu.tenant_id AND customer_id=contractor_guardian_id) as contractor_guardian_corporate_individual_flag
+			,mcu.insured_customer_id
+			,mcu.insured_corporate_individual_flag
+			,mcu.insured_guardian_id
+		    ,(SELECT corporate_individual_flag FROM customers WHERE tenant_id=mcu.tenant_id AND customer_id=insured_guardian_id) as insured_guardian_corporate_individual_flag
+		FROM (SELECT
+			cu.tenant_id
+			,cu.contractor_customer_id
+			,cu.contractor_corporate_individual_flag
+			,CASE contractor_corporate_individual_flag WHEN 1 THEN (SELECT guardian_id FROM customers_individual WHERE tenant_id=cu.tenant_id AND customer_id=cu.contractor_customer_id) 
+				WHEN 2 THEN null END as contractor_guardian_id
+			,cu.insured_customer_id
+			,cu.insured_corporate_individual_flag
+			,CASE insured_corporate_individual_flag WHEN 1 THEN (SELECT guardian_id FROM customers_individual WHERE tenant_id=cu.tenant_id AND customer_id=cu.insured_customer_id) 
+				WHEN 2 THEN null END as insured_guardian_id
+		FROM (
+		SELECT 
+			c.tenant_id
+			,mr.request_no
+			,c.contractor_customer_id as contractor_customer_id
+			,(SELECT corporate_individual_flag FROM customers WHERE tenant_id=c.tenant_id AND customer_id=c.contractor_customer_id) as contractor_corporate_individual_flag
+			, CASE WHEN c.relationship!='01' THEN c.insured_customer_id ELSE contractor_customer_id END as insured_customer_id
+			,CASE WHEN c.relationship!='01' THEN (SELECT corporate_individual_flag FROM customers WHERE tenant_id=c.tenant_id AND customer_id=c.insured_customer_id) 
+			 ELSE (SELECT corporate_individual_flag FROM customers WHERE tenant_id=c.tenant_id AND customer_id=c.contractor_customer_id) END as insured_corporate_individual_flag
+		FROM maintenance_requests mr JOIN contracts c 
+		ON mr.tenant_id=c.tenant_id AND mr.contract_no=c.contract_no AND mr.contract_branch_no=c.contract_branch_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}) cu) mcu
+	</select>
+	
+	<select id="selectMaintenanceRequestsCustomerForIndividual"  resultType="MaintenanceRequestsCustomersVo" parameterType="hashmap">
+		SELECT
+			mci.*,
+			mrc.relationship,
+			mrc.corporate_individual_flag
+		FROM maintenance_requests_customer_individual mci JOIN maintenance_requests_customer mrc
+		ON mrc.tenant_id=mci.tenant_id AND mrc.request_no=mci.request_no AND mrc.sequence_no=mci.sequence_no
+		AND mrc.before_after=mci.before_after
+		WHERE mci.before_after='A' AND mrc.role=#{type} AND mrc.request_no=#{requestNo} AND mci.tenant_id=#{tenantId}
+	</select>
+	
+	<select id="selectCustomerForIndividual"  resultType="MaintenanceRequestsCustomersVo" parameterType="hashmap">
+		SELECT
+			*
+		FROM customers_individual 
+		WHERE customer_id=#{customerId} AND tenant_id=#{tenantId}
+	</select>
+	
+	<select id="selectMaintenanceRequestsCustomerForCorporate"  resultType="MaintenanceRequestsCustomersVo" parameterType="hashmap">	
+		SELECT
+			mci.*,
+			mrc.relationship,
+			mrc.corporate_individual_flag
+		FROM maintenance_requests_customer_corporate mci JOIN maintenance_requests_customer mrc
+		ON mrc.tenant_id=mci.tenant_id AND mrc.request_no=mci.request_no AND mrc.sequence_no=mci.sequence_no
+		AND mrc.before_after=mci.before_after
+		WHERE mci.before_after='A' AND mrc.role=#{type} AND mrc.request_no=#{requestNo} AND mci.tenant_id=#{tenantId}
+	</select>
+	
+	<select id="selectCustomerForCorporate"  resultType="MaintenanceRequestsCustomersVo" parameterType="hashmap">
+		SELECT
+			*
+		FROM customers_corporate
+		WHERE customer_id=#{customerId} AND tenant_id=#{tenantId}
+	</select>
+	
+	<insert id="insertMaintenanceRequestsCustomer" parameterType="hashmap" useGeneratedKeys="false">
+		INSERT INTO maintenance_requests_customer
+		(
+			tenant_id
+			,request_no
+			,sequence_no
+			,before_after
+			,corporate_individual_flag
+			,role
+			,relationship
+			,created_by
+		)
+		SELECT
+			mr.tenant_id
+			,mr.request_no
+			<if test="sequenceNo != null">,#{sequenceNo}</if>
+			<if test="sequenceNo == null">,IFNULL(max(mrc.sequence_no), 0)+1</if>
+			,#{beforeAfter}
+			,#{corporateIndividualFlag}
+			,#{role}
+			,#{relationship}
+			,#{updatedBy}
+		FROM maintenance_requests mr LEFT JOIN maintenance_requests_customer mrc
+		ON mr.tenant_id = mrc.tenant_id AND mr.request_no=mrc.request_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+		ON DUPLICATE KEY UPDATE
+			corporate_individual_flag=#{corporateIndividualFlag}
+			,relationship=#{relationship}
+			,update_count=maintenance_requests_customer.update_count+1
+			,updated_by=#{updatedBy}
+		<selectKey keyProperty="sequenceNo" resultType="string" order="AFTER"> 
+		SELECT sequence_no as sequenceNo FROM maintenance_requests_customer 
+		WHERE tenant_id=#{tenantId} AND request_no=#{requestNo} AND role=#{role} AND before_after=#{beforeAfter}
+		</selectKey>
+	</insert>
+	
+	<insert id="insertMaintenanceRequestsCustomerIndividual">
+		INSERT INTO maintenance_requests_customer_individual
+		(
+			tenant_id
+			,request_no
+			,sequence_no
+			,before_after
+			,customer_id
+			,name_knj_sei
+			,name_knj_mei
+			,name_kana_sei
+			,name_kana_mei
+			,sex
+			,date_of_birth
+			,addr_zip_code
+			,addr_knj_pref
+			,addr_knj_1
+			<if test="addrKnj2 != null">,addr_knj_2</if>
+			,addr_tel1
+			<if test="addrTel2 != null">,addr_tel2</if>
+			,email
+			,created_by
+		)
+		VALUES(
+			#{tenantId}
+			,#{requestNo}
+			,#{sequenceNo}
+			,#{beforeAfter}
+			,#{customerId}
+			,#{nameKnjSei}
+			,#{nameKnjMei}
+			,#{nameKanaSei}
+			,#{nameKanaMei}
+			,#{sex}
+			<if test="dateOfBirth instanceof java.lang.Long">,FROM_UNIXTIME(#{dateOfBirth}/1000, '%Y-%m-%d')</if>
+			<if test="(dateOfBirth instanceof java.lang.Long)==false">,#{dateOfBirth}</if>
+			,#{addrZipCode}
+			,#{addrKnjPref}
+			,#{addrKnj1}
+			<if test="addrKnj2 != null">,#{addrKnj2}</if>
+			,#{addrTel1}
+			<if test="addrTel2 != null">,#{addrTel2}</if>
+			,#{email}
+			,#{updatedBy}
+		)
+		ON DUPLICATE KEY UPDATE
+			name_knj_sei=#{nameKnjSei}
+			,name_knj_mei=#{nameKnjMei}
+			,name_kana_sei=#{nameKanaSei}
+			,name_kana_mei=#{nameKanaMei}
+			,sex=#{sex}
+			<if test="dateOfBirth instanceof java.lang.Long">,date_of_birth=FROM_UNIXTIME(#{dateOfBirth}/1000 , '%Y-%m-%d')</if>
+			<if test="(dateOfBirth instanceof java.lang.Long)==false">,date_of_birth=#{dateOfBirth}</if>
+			,addr_zip_code=#{addrZipCode}
+			,addr_knj_pref=#{addrKnjPref}
+			,addr_knj_1=#{addrKnj1}
+			<if test="addrKnj2 != null">,addr_knj_2=#{addrKnj2}</if>
+			,addr_tel1=#{addrTel1}
+			<if test="addrTel2 != null">,addr_tel2=#{addrTel2}</if>
+			,email=#{email}
+			,update_count=maintenance_requests_customer_individual.update_count+1
+			,updated_by=#{updatedBy}
+	</insert>
+	
+	<insert id="insertMaintenanceRequestsCustomerCorporate" parameterType="hashmap">
+		INSERT INTO maintenance_requests_customer_corporate
+		(
+			tenant_id
+			,request_no
+			,sequence_no
+			,before_after
+			,customer_id
+			,corp_name_official
+			,corp_name_kana
+			,corp_addr_zip_code
+			,corp_addr_knj_pref
+			,corp_addr_knj_1
+			<if test="corpAddrKnj2 != null">,corp_addr_knj_2</if>
+			,rep10e_name_kana_sei
+			,rep10e_name_kana_mei
+			,rep10e_name_knj_sei
+			,rep10e_name_knj_mei
+			,rep10e_addr_zip_code
+			,rep10e_addr_knj_pref
+			,rep10e_addr_knj_1
+			<if test="rep10eAddrKnj2 != null">,rep10e_addr_knj_2</if>
+			,rep10e_addr_tel1
+			<if test="rep10eAddrTel2 != null">,rep10e_addr_tel2</if>
+			,rep10e_sex
+			,rep10e_date_of_birth
+			,contact_name_kana_sei
+			,contact_name_kana_mei
+			,contact_name_knj_sei
+			,contact_name_knj_mei
+			,contact_addr_zip_code
+			,contact_addr_knj_pref
+			,contact_addr_knj_1
+			<if test="contactAddrKnj2 != null">,contact_addr_knj_2</if>
+			,contact_addr_tel1
+			<if test="contactAddrTel1 != null">,contact_addr_tel2</if>
+			,contact_email
+			,created_by)
+		VALUES(
+			#{tenantId}
+			,#{requestNo}
+			,#{sequenceNo}
+			,#{beforeAfter}
+			,#{customerId}
+			,#{corpNameOfficial}
+			,#{corpNameKana}
+			,#{corpAddrZipCode}
+			,#{corpAddrKnjPref}
+			,#{corpAddrKnj1}
+			<if test="corpAddrKnj2 != null">,#{corpAddrKnj2}</if>
+			,#{rep10eNameKanaSei}
+			,#{rep10eNameKanaMei}
+			,#{rep10eNameKnjSei}
+			,#{rep10eNameKnjMei}
+			,#{rep10eAddrZipCode}
+			,#{rep10eAddrKnjPref}
+			,#{rep10eAddrKnj1}
+			<if test="rep10eAddrKnj2 != null">,#{rep10eAddrKnj2}</if>
+			,#{rep10eAddrTel1}
+			<if test="rep10eAddrTel2 != null">,#{rep10eAddrTel2}</if>
+			,#{rep10eSex}
+			,FROM_UNIXTIME(#{rep10eDateOfBirth}/1000)
+			,#{contactNameKanaSei}
+			,#{contactNameKanaMei}
+			,#{contactNameKnjSei}
+			,#{contactNameKnjMei}
+			,#{contactAddrZipCode}
+			,#{contactAddrKnjPref}
+			,#{contactAddrKnj1}
+			<if test="contactAddrKnj2 != null">,#{contactAddrKnj2}</if>
+			,#{contactAddrTel1}
+			<if test="contactAddrTel1 != null">,#{contactAddrTel2}</if>
+			,#{contactEmail}
+			,#{updatedBy}
+		)
+		ON DUPLICATE KEY UPDATE
+			corp_name_official=#{corpNameOfficial}
+			,corp_name_kana=#{corpNameKana}
+			,corp_addr_zip_code=#{corpAddrZipCode}
+			,corp_addr_knj_pref=#{corpAddrKnjPref}
+			,corp_addr_knj_1=#{corpAddrKnj1}
+			<if test="corpAddrKnj2 != null">,corp_addr_knj_2=#{corpAddrKnj2}</if>
+			,rep10e_name_kana_sei=#{rep10eNameKanaSei}
+			,rep10e_name_kana_mei=#{rep10eNameKanaMei}
+			,rep10e_name_knj_sei=#{rep10eNameKnjSei}
+			,rep10e_name_knj_mei=#{rep10eNameKnjMei}
+			,rep10e_addr_zip_code=#{rep10eAddrZipCode}
+			,rep10e_addr_knj_pref=#{rep10eAddrKnjPref}
+			,rep10e_addr_knj_1=#{rep10eAddrKnj1}
+			<if test="rep10eAddrKnj2 != null">,rep10e_addr_knj_2=#{rep10eAddrKnj2}</if>
+			,rep10e_addr_tel1=#{rep10eAddrTel1}
+			<if test="rep10eAddrTel2 != null">,rep10e_addr_tel2=#{rep10eAddrTel2}</if>
+			,rep10e_sex=#{rep10eSex}
+			,rep10e_date_of_birth=FROM_UNIXTIME(#{rep10eDateOfBirth}/1000)
+			,contact_name_kana_sei=#{contactNameKanaSei}
+			,contact_name_kana_mei=#{contactNameKanaMei}
+			,contact_name_knj_sei=#{contactNameKnjSei}
+			,contact_name_knj_mei=#{contactNameKnjMei}
+			,contact_addr_zip_code=#{contactAddrZipCode}
+			,contact_addr_knj_pref=#{contactAddrKnjPref}
+			,contact_addr_knj_1=#{contactAddrKnj1}
+			<if test="contactAddrKnj2 != null">,contact_addr_knj_2=#{contactAddrKnj2}</if>
+			,contact_addr_tel1=#{contactAddrTel1}
+			<if test="contactAddrTel1 != null">,contact_addr_tel2=#{contactAddrTel2}</if>
+			,contact_email=#{contactEmail}
+			,update_count=maintenance_requests_customer_corporate.update_count+1
+			,updated_by=#{updatedBy}
+	</insert>
+	
+	<select id="selectMaintenanceRequestsCustomerForMap" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			mrc1.*
+			,CASE WHEN cui.customer_id is null THEN cuc.customer_id ELSE cui.customer_id END as customer_id
+		FROM (
+			SELECT
+				mrc.*
+			FROM maintenance_requests_customer mrc JOIN maintenance_requests mr
+			ON mrc.request_no=mr.request_no AND mrc.tenant_id=mr.tenant_id
+			WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo} AND mrc.before_after='A'
+			ORDER BY role
+		) mrc1 LEFT OUTER JOIN maintenance_requests_customer_individual cui
+				ON mrc1.tenant_id=cui.tenant_id AND mrc1.request_no = cui.request_no AND mrc1.sequence_no=cui.sequence_no AND mrc1.corporate_individual_flag='1'
+			LEFT OUTER JOIN maintenance_requests_customer_corporate cuc
+				ON mrc1.tenant_id=cuc.tenant_id AND mrc1.request_no = cuc.request_no AND mrc1.sequence_no=cuc.sequence_no AND mrc1.corporate_individual_flag='2'
+	</select>
+	
+	<select id="selectMaintenanceRequestsCustomerIndividualForMap" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			mrc.*
+		FROM maintenance_requests_customer_individual mrc JOIN maintenance_requests mr
+		ON mrc.request_no=mr.request_no AND mrc.tenant_id=mr.tenant_id
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo} AND mrc.before_after='A'
+	</select>
+	
+	<select id="selectMaintenanceRequestsCustomerCorporateForMap" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			mrc.*
+		FROM maintenance_requests_customer_corporate mrc JOIN maintenance_requests mr
+		ON mrc.request_no=mr.request_no AND mrc.tenant_id=mr.tenant_id
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo} AND mrc.before_after='A'
+	</select>
+	
+	<insert id="insertCustomer" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO customers
+		(
+			tenant_id
+			,customer_id
+			,corporate_individual_flag
+			,created_by
+		)
+		VALUES(
+			#{tenantId}
+			,#{customerId}
+			,#{corporateIndividualFlag}
+			,#{updatedBy}
+		)
+	</insert>
+	
+	<insert id="insertCustomerIndividual">
+		INSERT INTO customers_individual
+		(
+			tenant_id
+			,customer_id
+			,name_knj_sei
+			,name_knj_mei
+			,name_kana_sei
+			,name_kana_mei
+			,sex
+			,date_of_birth
+			,addr_zip_code
+			,addr_knj_pref
+			,addr_knj_1
+			<if test="addrKnj2 != null">,addr_knj_2</if>
+			,addr_tel1
+			<if test="addrTel2 != null">,addr_tel2</if>
+			,email
+			,created_by
+		)
+		VALUES(
+			#{tenantId}
+			,#{customerId}
+			,#{nameKnjSei}
+			,#{nameKnjMei}
+			,#{nameKanaSei}
+			,#{nameKanaMei}
+			,#{sex}
+			<if test="dateOfBirth instanceof java.lang.Long">,FROM_UNIXTIME(#{dateOfBirth}/1000 , '%Y-%m-%d')</if>
+			<if test="(dateOfBirth instanceof java.lang.Long)==false">,#{dateOfBirth}</if>
+			,#{addrZipCode}
+			,#{addrKnjPref}
+			,#{addrKnj1}
+			<if test="addrKnj2 != null">,#{addrKnj2}</if>
+			,#{addrTel1}
+			<if test="addrTel2 != null">,#{addrTel2}</if>
+			,#{email}
+			,#{updatedBy}
+		)
+	</insert>
+	
+	<insert id="insertCustomerCorporate" parameterType="hashmap">
+		INSERT INTO customers_corporate
+		(
+			tenant_id
+			,customer_id
+			,corp_name_official
+			,corp_name_kana
+			,corp_addr_zip_code
+			,corp_addr_knj_pref
+			,corp_addr_knj_1
+			<if test="corpAddrKnj2 != null">,corp_addr_knj_2</if>
+			,rep10e_name_kana_sei
+			,rep10e_name_kana_mei
+			,rep10e_name_knj_sei
+			,rep10e_name_knj_mei
+			,rep10e_addr_zip_code
+			,rep10e_addr_knj_pref
+			,rep10e_addr_knj_1
+			<if test="rep10eAddrKnj2 != null">,rep10e_addr_knj_2</if>
+			,rep10e_addr_tel1
+			<if test="rep10eAddrTel2 != null">,rep10e_addr_tel2</if>
+			,rep10e_sex
+			,rep10e_date_of_birth
+			,contact_name_kana_sei
+			,contact_name_kana_mei
+			,contact_name_knj_sei
+			,contact_name_knj_mei
+			,contact_addr_zip_code
+			,contact_addr_knj_pref
+			,contact_addr_knj_1
+			<if test="contactAddrKnj2 != null">,contact_addr_knj_2</if>
+			,contact_addr_tel1
+			<if test="contactAddrTel1 != null">,contact_addr_tel2</if>
+			,contact_email
+			,created_by)
+		VALUES(
+			#{tenantId}
+			,#{customerId}
+			,#{corpNameOfficial}
+			,#{corpNameKana}
+			,#{corpAddrZipCode}
+			,#{corpAddrKnjPref}
+			,#{corpAddrKnj1}
+			<if test="corpAddrKnj2 != null">,#{corpAddrKnj2}</if>
+			,#{rep10eNameKanaSei}
+			,#{rep10eNameKanaMei}
+			,#{rep10eNameKnjSei}
+			,#{rep10eNameKnjMei}
+			,#{rep10eAddrZipCode}
+			,#{rep10eAddrKnjPref}
+			,#{rep10eAddrKnj1}
+			<if test="rep10eAddrKnj2 != null">,#{rep10eAddrKnj2}</if>
+			,#{rep10eAddrTel1}
+			<if test="rep10eAddrTel2 != null">,#{rep10eAddrTel2}</if>
+			,#{rep10eSex}
+			,#{rep10eDateOfBirth}
+			,#{contactNameKanaSei}
+			,#{contactNameKanaMei}
+			,#{contactNameKnjSei}
+			,#{contactNameKnjMei}
+			,#{contactAddrZipCode}
+			,#{contactAddrKnjPref}
+			,#{contactAddrKnj1}
+			<if test="contactAddrKnj2 != null">,#{contactAddrKnj2}</if>
+			,#{contactAddrTel1}
+			<if test="contactAddrTel1 != null">,#{contactAddrTel2}</if>
+			,#{contactEmail}
+			,#{updatedBy}
+		)
+	</insert>
+	
+	<update id="updateCustomer" parameterType="hashmap" >
+		UPDATE customers
+		SET corporate_individual_flag=#{corporateIndividualFlag}
+			,update_count=update_count+1
+			,updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND customer_id=#{customerId}
+	</update>
+	
+	<update id="updateCustomerIndividual" parameterType="hashmap" >
+		UPDATE customers_individual
+		SET name_knj_sei=#{nameKnjSei}
+			,name_knj_mei=#{nameKnjMei}
+			,name_kana_sei=#{nameKanaSei}
+			,name_kana_mei=#{nameKanaMei}
+			,sex=#{sex}
+			<if test="dateOfBirth instanceof java.lang.Long">,date_of_birth=FROM_UNIXTIME(#{dateOfBirth}/1000 , '%Y-%m-%d')</if>
+			<if test="(dateOfBirth instanceof java.lang.Long)==false">,date_of_birth=#{dateOfBirth}</if>
+			,addr_zip_code=#{addrZipCode}
+			,addr_knj_pref=#{addrKnjPref}
+			,addr_knj_1=#{addrKnj1}
+			<if test="addrKnj2 != null">,addr_knj_2=#{addrKnj2}</if>
+			,addr_tel1=#{addrTel1}
+			<if test="addrTel2 != null">,addr_tel2=#{addrTel2}</if>
+			,email=#{email}
+			,update_count=update_count+1
+			,updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND customer_id=#{customerId}
+	</update>
+	
+	<update id="updateCustomerCorporate" parameterType="hashmap" >
+		UPDATE customers_corporate
+		SET corp_name_official=#{corpNameOfficial}
+			,corp_name_kana=#{corpNameKana}
+			,corp_addr_zip_code=#{corpAddrZipCode}
+			,corp_addr_knj_pref=#{corpAddrKnjPref}
+			,corp_addr_knj_1=#{corpAddrKnj1}
+			,corp_addr_knj_2=#{corpAddrKnj2}
+			,rep10e_name_kana_sei=#{rep10eNameKanaSei}
+			,rep10e_name_kana_mei=#{rep10eNameKanaMei}
+			,rep10e_name_knj_sei=#{rep10eNameKnjSei}
+			,rep10e_name_knj_mei=#{rep10eNameKnjMei}
+			,rep10e_addr_zip_code=#{rep10eAddrZipCode}
+			,rep10e_addr_knj_pref=#{rep10eAddrKnjPref}
+			,rep10e_addr_knj_1=#{rep10eAddrKnj1}
+			,rep10e_addr_knj_2=#{rep10eAddrKnj2}
+			,rep10e_addr_tel1=#{rep10eAddrTel1}
+			,rep10e_addr_tel2=#{rep10eAddrTel2}
+			,rep10e_sex=#{rep10eSex}
+			,rep10e_date_of_birth=#{rep10eDateOfBirth}
+			,contact_name_kana_sei=#{contactNameKanaSei}
+			,contact_name_kana_mei=#{contactNameKanaMei}
+			,contact_name_knj_sei=#{contactNameKnjSei}
+			,contact_name_knj_mei=#{contactNameKnjMei}
+			,contact_addr_zip_code=#{contactAddrZipCode}
+			,contact_addr_knj_pref=#{contactAddrKnjPref}
+			,contact_addr_knj_1=#{contactAddrKnj1}
+			,contact_addr_knj_2=#{contactAddrKnj2}
+			,contact_addr_tel1=#{contactAddrTel1}
+			,contact_addr_tel2=#{contactAddrTel2}
+			,contact_email=#{contactEmail}
+			,update_count=update_count+1
+			,updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND customer_id=#{customerId}
+	</update>
+	
+	<select id="selectCustomerForBefore" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			*
+		FROM customers
+		WHERE customer_id=#{customerId} AND tenant_id=#{tenantId}
+	</select>
+	
+	<select id="selectCustomerIndividualForBefore" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			*
+		FROM customers_individual 
+		WHERE customer_id=#{customerId} AND tenant_id=#{tenantId}
+	</select>
+	
+	<select id="selectCustomerCorporateForBefore" resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			*
+		FROM customers_corporate
+		WHERE customer_id=#{customerId} AND tenant_id=#{tenantId}
+	</select>
+	
+	<update id="updateContractsCustomerId" parameterType="hashmap">
+		UPDATE
+			contracts c JOIN maintenance_requests m
+		ON c.tenant_id=m.tenant_id AND c.contract_no=m.contract_no AND c.contract_branch_no=m.contract_branch_no
+		SET
+			c.update_count=c.update_count+1
+			,c.updated_by=#{updatedBy}
+			,c.relationship=#{relationship}
+			<if test="PH != null">,contractor_customer_id=#{PH}</if>
+			<if test="IN != null">,insured_customer_id=#{IN}</if>
+		WHERE m.tenant_id=#{tenantId} AND m.request_no=#{requestNo}
+	</update>
+	
+	<update id="updateCustomersIndividualGuardianId" parameterType="hashmap">
+		UPDATE
+			customers_individual ci JOIN (SELECT cu.customer_id, cu.tenant_id FROM customers cu JOIN 
+			(SELECT c.tenant_id, 
+			<if test='role.equals("PG")'>c.contractor_customer_id</if><if test='role.equals("IG")'>c.insured_customer_id</if>
+			 as customer_id FROM contracts c JOIN maintenance_requests mr
+		    ON c.tenant_id=mr.tenant_id AND c.contract_no=mr.contract_no AND c.contract_branch_no=mr.contract_branch_no
+		    WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}) cc
+			ON cu.tenant_id=cc.tenant_id AND cu.customer_id=cc.customer_id) ccc
+		ON ci.tenant_id=ccc.tenant_id AND ci.customer_id=ccc.customer_id
+		SET
+			ci.update_count=ci.update_count+1
+			,ci.updated_by=#{updatedBy}
+			,ci.guardian_id=#{customerId}
+	</update>
+	
+	<update id="updateMaintenanceRequestsCustomerIndividualGuardianId" parameterType="hashmap">
+		UPDATE
+			maintenance_requests_customer_individual mci JOIN maintenance_requests_customer mr
+			ON mci.tenant_id=mr.tenant_id AND mci.request_no=mr.request_no AND mci.sequence_no=mr.sequence_no
+			   AND mci.before_after=mr.before_after
+		SET
+			mci.update_count=mci.update_count+1
+			,mci.updated_by=#{updatedBy}
+			,mci.guardian_id=#{customerId}
+		WHERE mr.role=<if test='role.equals("PG")'>'PH'</if><if test='role.equals("IG")'>'IN'</if> 
+			AND mci.before_after='B' AND mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</update>
+</mapper>

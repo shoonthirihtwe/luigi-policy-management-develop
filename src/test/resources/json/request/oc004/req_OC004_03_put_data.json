@@ -1,0 +1,13 @@
+{
+    "requestNo":"0000002213",
+	"bankCode": "0333",
+    "bankBranchCode":"113",
+	"bankAccountType": "1",
+    "bankAccountNo": "2020202",
+	"bankAccountName": "タマキミヤハラ",
+	"refundAmount": 1200,
+	"communicationColumn": "",
+	"firstAssessmentResults": "00",
+	"commentUnderweiter1": "成年後見人の同意書不足。\r再請求を依頼。\r後見人同意は書類2で確認済。",
+    "updateCount":3
+}

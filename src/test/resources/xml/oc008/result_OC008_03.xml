@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <maintenance_requests tenant_id='1' request_no='0000000000000000000003' contract_no='0000000103' contract_branch_no='01' active_inactive='I' transaction_code='14' request_status='1' application_date='2021-08-01' application_method='W' received_date='2021-08-01' comment_underweiter1='不備あり' first_assessment_results='02' communication_column='受取人名が不鮮明です。' apply_date='2021-08-01' entry_type='O' update_count='2' />
+	<maintenance_requests_beneficiaries tenant_id='1' request_no='0000000000000000000003' before_after='A' role_type='BD' role_sequence_no='1' corporate_individual_flag='1' name_knj_sei='受取人個人不鮮明' name_knj_mei='一之一' name_kana_sei='ウケトリニンコジンフセンメイ' name_kana_mei='イチノイチ' share='100' rel_ship_to_insured='04' update_count='1'/>
+	<contract_log tenant_id='1' contract_no='0000000103' contract_branch_no='01' sequence_no='1' log_type='0' reason_group_code='09' reason_code='020' contact_transaction_code='02' description='保全（保全）請求　１次査定完了' program_name='SC_026' update_count='1'/>
+</dataset>

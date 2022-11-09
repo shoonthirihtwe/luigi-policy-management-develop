@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.ichain.luigi2.mapper.ManagementMapper">
+	<insert id="insertMaintenanceRequests" parameterType="hashmap" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO maintenance_requests
+		(
+			tenant_id,
+			request_no,
+			contract_no,
+			contract_branch_no,
+			active_inactive,
+			transaction_code,
+			request_status,
+			application_date,
+			application_method,
+			received_date,
+			entry_type,
+			<if test='terminationBaseDate != null'>termination_base_date,</if>
+			created_by
+		)
+		SELECT 
+			#{tenantId}
+		    ,#{requestNo}
+		    ,#{contractNo}
+			,max(contract_branch_no)
+		    ,'A'
+		    ,#{transactionCode}
+		    ,0
+			,#{onlineDate}
+			,IFNULL(#{applicationMethod}, 'W')
+		    ,FROM_UNIXTIME(#{receivedDate}/1000)
+		    ,CASE WHEN #{applicationMethod}='W' OR #{applicationMethod}='A' THEN 'P' ELSE 'O' END
+		    <if test='terminationBaseDate != null'>,FROM_UNIXTIME(#{terminationBaseDate}/1000)</if>
+		    ,#{updatedBy}
+		FROM contracts WHERE contract_no=#{contractNo}
+	</insert>
+	<select id="selectContractInfo"  resultType="map" parameterType="hashmap">
+		SELECT distinct
+			co.tenant_id as tenantId
+			,co.contract_no as contractNo
+			,co.contract_branch_no as contractBranchNo
+			,co.application_date as applicationDate
+			,CASE cu.corporate_individual_flag
+				when '1' then concat(cui.name_knj_sei,'　',cui.name_knj_mei)
+				when '2' then cuc.corp_name_official
+				ELSE null
+			END as contractNameKnj
+			,CASE cu.corporate_individual_flag
+				when '1' then concat(cui.name_kana_sei,'　',cui.name_kana_mei)
+				WHEN '2' then cuc.corp_name_kana
+				ELSE null
+			END as contractNameKana,
+			u.contract_status as contractStatus
+		FROM contracts co JOIN customers cu
+				ON co.tenant_id=cu.tenant_id AND co.contractor_customer_id = cu.customer_id
+			LEFT OUTER JOIN customers_individual cui
+				ON co.tenant_id=cui.tenant_id AND co.contractor_customer_id = cui.customer_id AND cu.corporate_individual_flag='1'
+			LEFT OUTER JOIN customers_corporate cuc
+				ON co.tenant_id=cuc.tenant_id AND co.contractor_customer_id = cuc.customer_id AND cu.corporate_individual_flag='2'
+			LEFT OUTER JOIN underwritings u
+				ON co.tenant_id=u.tenant_id AND co.contract_no=u.contract_no
+		WHERE co.tenant_id=#{tenantId} AND co.contract_no=#{contractNo} AND co.contract_branch_no=(SELECT max(contract_branch_no) as contract_branch_no
+				FROM contracts WHERE tenant_id=#{tenantId} AND contract_no=#{contractNo} GROUP BY tenant_id,contract_no)
+	</select>
+	
+	<select id="selectUnderwritingsContractStatus"  resultType="string" parameterType="hashmap">
+		SELECT
+			contract_status
+		FROM underwritings
+		WHERE tenant_id=#{tenantId} AND contract_no=#{contractNo}
+	</select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<maintenance_requests tenant_id='1'
+		request_no='0000000000000000000005' contract_no='0000000112'
+		contract_branch_no='01' active_inactive='I' transaction_code='11'
+		request_status='1' application_date='2021-08-01'
+		application_method='W' received_date='2021-08-01'
+		comment_underweiter1='不備とします。' first_assessment_results='02'
+		communication_column='契約者と被保険者を法人に変更します。&#xD;本人確認書類がありません。再度提出してください。'
+		apply_date='2021-08-01' entry_type='0' update_count='2' />
+	<maintenance_requests_customer
+		tenant_id='1' request_no='0000000000000000000005' sequence_no='1'
+		customer_id='0000000000004' before_after='A'
+		corporate_individual_flag='2' role='PH' />
+	<maintenance_requests_customer
+		tenant_id='1' request_no='0000000000000000000005' sequence_no='2'
+		customer_id='0000000000004' before_after='A'
+		corporate_individual_flag='2' role='IN' />
+	<maintenance_requests_customer_corporate
+		tenant_id='1' request_no='0000000000000000000005' sequence_no='1'
+		before_after='A' corp_name_kana='カブシキガイシャホウジンイチノサン'
+		corp_name_official='株式会社法人一之三' corp_addr_zip_code='1900202'
+		corp_addr_knj_pref='東京都' corp_addr_knj_1='西多摩郡檜原村藤原'
+		corp_addr_knj_2='469' rep10e_sex='1' rep10e_date_of_birth='1983-12-05'
+		rep10e_name_kana_sei='ダイヒョウイ' rep10e_name_kana_mei='イチノサンノイチ'
+		rep10e_name_knj_sei='代表' rep10e_name_knj_mei='一之三之一'
+		rep10e_addr_zip_code='4790046' rep10e_addr_knj_pref='東京都'
+		rep10e_addr_knj_1='西多摩郡檜原村藤原' rep10e_addr_knj_2='469'
+		rep10e_addr_tel1='05-6918-4745' rep10e_addr_tel2='090-3832-0069'
+		contact_name_kana_sei='タントウシャ' contact_name_kana_mei='イチノサンノイチ'
+		contact_name_knj_sei='担当者' contact_name_knj_mei='一之三之一'
+		contact_addr_zip_code='7501137' contact_addr_knj_pref='山口県'
+		contact_addr_knj_1='下関市小月南町' contact_addr_knj_2='123'
+		contact_addr_tel1='09-8353-1745' contact_addr_tel2='090-1816-5565'
+		contact_email='ichainbase.test02@gmail.com' update_count='1' />
+	<maintenance_requests_customer_corporate
+		tenant_id='1' request_no='0000000000000000000005' sequence_no='2'
+		before_after='A' corp_name_kana='カブシキガイシャホウジンイチノサン'
+		corp_name_official='株式会社法人一之三' corp_addr_zip_code='1900202'
+		corp_addr_knj_pref='東京都' corp_addr_knj_1='西多摩郡檜原村藤原'
+		corp_addr_knj_2='469' rep10e_sex='1' rep10e_date_of_birth='1983-12-05'
+		rep10e_name_kana_sei='ダイヒョウイ' rep10e_name_kana_mei='イチノサンノイチ'
+		rep10e_name_knj_sei='代表' rep10e_name_knj_mei='一之三之一'
+		rep10e_addr_zip_code='4790046' rep10e_addr_knj_pref='東京都'
+		rep10e_addr_knj_1='西多摩郡檜原村藤原' rep10e_addr_knj_2='469'
+		rep10e_addr_tel1='05-6918-4745' rep10e_addr_tel2='090-3832-0069'
+		contact_name_kana_sei='タントウシャ' contact_name_kana_mei='イチノサンノイチ'
+		contact_name_knj_sei='担当者' contact_name_knj_mei='一之三之一'
+		contact_addr_zip_code='7501137' contact_addr_knj_pref='山口県'
+		contact_addr_knj_1='下関市小月南町' contact_addr_knj_2='123'
+		contact_addr_tel1='09-8353-1745' contact_addr_tel2='090-1816-5565'
+		contact_email='ichainbase.test02@gmail.com' update_count='1' />
+	<contract_log tenant_id='1' contract_no='0000000112'
+		contract_branch_no='01' sequence_no='1' log_type='0'
+		reason_group_code='02' reason_code='020' contact_transaction_code='02'
+		description='保全（保全）請求　１次査定完了' program_name='SC_021' update_count='1' />
+</dataset>

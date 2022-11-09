@@ -1,0 +1,18 @@
+{
+	"receivedDate": "/Date(1660057200000)/",
+	"contractNo": "0000000103",
+	"contractNameKnj": "安達　正利",
+	"contractEmail": "ichainbase.test02@gmail.com",
+	"paymentMethodCode": "4",
+	"bankCode": "0333",
+	"bankBranchCode": "113",
+	"bankAccountType": "2",
+	"bankAccountNo": "2020202",
+	"bankAccountName": "タマキミヤハラ",
+	"emailForNotification": "ichainbase.test02@gmail.com",
+	"communicationColumn": "",
+	"commentUnderweiter1": "添付書類確認済み。\r支店コード入力訂正済み。",
+	"firstAssessmentResults": "00",
+	"secondAssessmentResults":"01",
+	"commentUnderweiter2":"支店コード入力ミス。"
+}

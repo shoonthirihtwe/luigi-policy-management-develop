@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<maintenance_requests email_for_notification='ichainbase.test01@gmail.com' communication_column='解約に必要な書類が不足しています。&#xD; 後見人の同意書をお送りください。' first_assessment_results='02' comment_underweiter1='成年後見人の同意書不足。&#xD;再請求を依頼。' request_status='1' />
+	<refund_amount bank_code='0333' bank_branch_code='113' bank_account_type='1' bank_account_no='2020202' bank_account_holder='タマキミヤハラ' refund_amount='1200' contract_no='0000000201' contract_branch_no='02' request_no='0000002213' active_inactive='A' pay_reason='1' pay_method='1'/>
+</dataset>

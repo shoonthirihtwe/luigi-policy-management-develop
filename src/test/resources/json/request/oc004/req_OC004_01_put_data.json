@@ -1,0 +1,14 @@
+{
+    "requestNo":"0000002213",
+	"bankCode": "0333",
+    "bankBranchCode":"113",
+	"bankAccountType": "1",
+    "bankAccountNo": "2020202",
+	"bankAccountName": "タマキミヤハラ",
+	"refundAmount": 1200,
+	"emailForNotification": "ichainbase.test01@gmail.com",
+	"communicationColumn": "解約に必要な書類が不足しています。\r 後見人の同意書をお送りください。",
+	"firstAssessmentResults": "02",
+	"commentUnderweiter1": "成年後見人の同意書不足。\r再請求を依頼。",
+    "updateCount":1
+}

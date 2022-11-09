@@ -1,0 +1,101 @@
+# include CI templates
+.inc_prj: &inc_prj
+  project: 'ichaininc/gitlab-ci-templates'
+  ref: master
+
+# include lg2 external service deploy pipeline job
+include:
+  - <<: *inc_prj
+    file: 'templates/lg2-staging-external-deploy.yml'
+  - <<: *inc_prj
+    file: 'templates/luigi2/production-deploy.yml'
+
+image: docker:latest
+services:
+  - docker:dind
+
+stages:
+  - build
+  - package
+  - deploy
+
+variables:
+  TZ: "Asia/Tokyo"
+
+before_script:
+  - date
+  - export GRADLE_USER_HOME='pwd'/.gradle
+  - chmod +x gradlew
+  - apt-get update && apt-get install -y mysql-client
+  - mysql -hmysql -u root -p$MYSQL_PASS -e 'create database luigi2_test'
+  - sed -i 's/35\.200\.102\.234/mysql/' luigi2-common/src/test/resources/application-common-test.properties
+
+gradle-build-only:
+  image: gradle:jdk15
+  stage: build
+  services:
+    - mysql:5.7
+    - redis:latest
+  variables:
+    GIT_SUBMODULE_STRATEGY: normal
+    MYSQL_ROOT_PASSWORD: $MYSQL_PASS
+  artifacts:
+    when: always
+    paths:
+      - build/reports/checkstyle
+  script:
+    - ./gradlew build --info
+  tags:
+    - luigi-runner
+  only:
+    - branches
+
+gradle-build:
+ image: gradle:jdk15
+ stage: build
+ services:
+    - mysql:5.7
+    - redis:latest
+ variables:
+  GIT_SUBMODULE_STRATEGY: normal
+  MYSQL_ROOT_PASSWORD: $MYSQL_PASS
+ artifacts:
+   expire_in: 1 hour
+   paths:
+      - build/libs/*.jar 
+ script:
+  - ./gradlew build --info
+ 
+ tags:
+    - luigi-runner
+ only:
+    - tags
+
+
+docker-build-push:
+  stage: package
+  image: docker:latest
+  variables:
+    IMAGE_TAG: ${REPOSITORY_URI}:${CI_COMMIT_TAG}
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip3 install awscli
+  script:
+    - $(aws ecr get-login --no-include-email)
+    - docker build -t ${IMAGE_TAG} .
+    - docker push ${IMAGE_TAG}
+  tags:
+    - luigi-runner
+  only:
+    - tags
+
+# customize the include template, edit the following
+staging-deploy:
+  stage: deploy
+
+# customize the include template, edit the following
+production-deploy:
+  variables:
+    TARGET_BRANCH_APP: main
+  only:
+    - main  

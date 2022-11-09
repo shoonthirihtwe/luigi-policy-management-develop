@@ -1,0 +1,26 @@
+[
+    {
+        "receivedDate": "/Date(1627743600000)/",
+        "contractNo": "0000000101",
+        "contractNameKnj": "テスト個人　一之一",
+        "contractNameKana": "テストコジン　イチノイチ",
+        "transactionCode": "11",
+        "requestStatus": "0"
+    },
+    {
+        "receivedDate": "/Date(1628694000000)/",
+        "contractNo": "0000000104",
+        "contractNameKnj": "株式会社法人一之一",
+        "contractNameKana": "カブシキガイシャホウジントイチノイチ",
+        "transactionCode": "41",
+        "requestStatus": "U"
+    },
+    {
+        "receivedDate": "/Date(1627830000000)/",
+        "contractNo": "0000000106",
+        "contractNameKnj": "株式会社法人一之二",
+        "contractNameKana": "カブシキガイシャホウジンイチノニ",
+        "transactionCode": "41",
+        "requestStatus": "0"
+    }
+]

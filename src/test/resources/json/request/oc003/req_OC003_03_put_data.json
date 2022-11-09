@@ -1,0 +1,15 @@
+{
+	"requestNo": "0000000000000000001214",
+	"contractEmail": "ichainbase.test02@gmail.com",
+	"paymentMethodCode":"4",
+	"bankCode":"0131",
+    "bankBranchCode":"999",
+    "bankAccountType":"1",
+    "bankAccountNo":"1020304",
+    "bankAccountName":"アダチマサトシ",
+    "emailForNotification":"ichainbase.test02@gmail.com",
+    "communicationColumn":"",
+    "firstAssessmentResults":"00",
+    "commentUnderweiter1":"添付書類確認済み。",
+    "updateCount":"1"
+}

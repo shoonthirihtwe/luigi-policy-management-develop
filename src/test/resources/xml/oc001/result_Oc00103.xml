@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<maintenance_requests tenant_id='1'
+		request_no='0000000000000000000003' contract_no='0000000103'
+		contract_branch_no='01' transaction_code='31' request_status='0'
+		application_method='W' active_inactive='A'
+		application_date='2023-03-01' received_date='2021-08-01' />
+	<maintenance_documents tenant_id='1'
+		sequence_no='1' request_no='0000000000000000000003'
+		document_title='ドキュメント1.csv' />
+	<maintenance_requests_no tenant_id='1' request_no='0000000000000000000003' update_count='2'/>
+	<maintenance_requests_no tenant_id='1' request_no='0000000000000000000004' update_count='1'/>
+</dataset>

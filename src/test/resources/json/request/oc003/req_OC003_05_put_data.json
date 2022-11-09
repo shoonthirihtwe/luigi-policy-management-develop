@@ -1,0 +1,15 @@
+{
+	"requestNo": "0000000000000000001214",
+	"contractEmail": "ichainbase.test02@gmail.com",
+	"paymentMethodCode":"4",
+	"bankCode":"0333",
+    "bankBranchCode":"113",
+    "bankAccountType":"2",
+    "bankAccountNo":"2020202",
+    "bankAccountName":"タマキミヤハラ",
+    "emailForNotification":"ichainbase.test02@gmail.com",
+    "communicationColumn":"",
+    "firstAssessmentResults":"00",
+    "commentUnderweiter1":"添付書類確認済み。\r支店コード入力訂正済み。",
+    "updateCount":"3"
+}

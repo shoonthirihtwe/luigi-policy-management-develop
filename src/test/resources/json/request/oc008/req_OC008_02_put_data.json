@@ -1,0 +1,20 @@
+{
+	"requestNo": "0000000000000000000002",
+	"communicationColumn":  "取下をしてほしい旨の連絡があったため、取り下げます。",
+	"firstAssessmentResults": "01",
+	"commentUnderweiter1": "取下ます。",
+	"updateCount": 1,
+	"beneficiariesList": [
+		{
+			"roleType": "BD",
+			"corporateIndividualFlag": "1",
+			"nameKanaSei": "ウケトリニンコジン",
+			"nameKanaMei": "イチノイチ",
+			"nameKnjSei": "受取人個人",
+			"nameKnjMei": "一之一",
+			"share": 100,
+			"relShipToInsured": "01",
+			"roleSequenceNo": 1
+		}
+	]
+}

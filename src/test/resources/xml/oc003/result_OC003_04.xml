@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <maintenance_requests tenant_id='1' request_no='0000000000000000001214' contract_no='0000000103' second_assessment_results='01' comment_underweiter2='支店コード入力ミス。' request_status='0' update_count='3'/>
+	<contract_log contract_no='0000000103' contract_branch_no='01' sequence_no='2' log_type='0' reason_group_code='31' reason_code='020' contact_transaction_code='04' description='保全（保全）請求　１次査定者へ差戻し' program_name='SC_008'/>
+</dataset>

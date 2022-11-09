@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<maintenance_requests tenant_id='1'
+		request_no='0000000000000000000004' contract_no='0000000104'
+		contract_branch_no='01' active_inactive='I' transaction_code='11'
+		request_status='1' application_date='2021-08-12'
+		application_method='W' received_date='2021-08-12'
+		communication_column="契約者を個人に変更します。" comment_underweiter1='処理します。'
+		first_assessment_results='00' apply_date='2021-08-12' entry_type='0'
+		update_count='2' />
+	<maintenance_requests_customer
+		tenant_id='1' request_no='0000000000000000000004' sequence_no='1'
+		before_after='A' corporate_individual_flag='1' role='PH' />
+	<maintenance_requests_customer
+		tenant_id='1' request_no='0000000000000000000004' sequence_no='2'
+		before_after='A' corporate_individual_flag='1' role='IN' />
+	<maintenance_requests_customer_individual
+		tenant_id='1' request_no='0000000000000000000004' sequence_no='1'
+		before_after='A' name_kana_sei='テストコジン' name_kana_mei='イチノイチ'
+		name_knj_sei='個人' name_knj_mei='一之一' sex='1'
+		date_of_birth='1972-03-12' addr_zip_code='1510072'
+		addr_knj_pref='東京都' addr_knj_1='渋谷区幡谷' addr_knj_2='8330'
+		addr_tel1='03-3104-7244' email='ichainbase.test01@gmail.com'
+		update_count='1' />
+	<maintenance_requests_customer_individual
+		tenant_id='1' request_no='0000000000000000000004' sequence_no='1'
+		before_after='A' name_kana_sei='テストコジン' name_kana_mei='イチノイチ'
+		name_knj_sei='個人' name_knj_mei='一之一' sex='1'
+		date_of_birth='1972-03-12' addr_zip_code='1510072'
+		addr_knj_pref='東京都' addr_knj_1='渋谷区幡谷' addr_knj_2='8330'
+		addr_tel1='03-3104-7244' email='ichainbase.test01@gmail.com'
+		update_count='1' />
+
+	<contract_log tenant_id='1' contract_no='0000000104'
+		contract_branch_no='01' sequence_no='1' log_type='0'
+		reason_group_code='02' reason_code='020' contact_transaction_code='02'
+		description='保全（保全）請求　１次査定完了' program_name='SC_021' update_count='1' />
+</dataset>

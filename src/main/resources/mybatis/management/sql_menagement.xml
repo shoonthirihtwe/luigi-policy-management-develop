@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.ichain.luigi2.mapper.ManagementMapper">
+	<sql id="sql_fromMaintenanceRequests">
+		FROM maintenance_requests mr JOIN (
+		SELECT distinct
+			co.tenant_id 
+			,co.contract_no
+		    ,co.contract_branch_no
+		    ,co.sales_plan_code
+			,co.sales_plan_type_code
+			,co.issue_date
+			,co.relationship
+			,co.billing_info
+		    ,CASE cu.corporate_individual_flag
+				when '1' then concat(cui.name_knj_sei,'　',cui.name_knj_mei)
+				when '2' then cuc.corp_name_official
+				ELSE null
+			END as contract_name_knj
+			,CASE cu.corporate_individual_flag
+				when '1' then concat(cui.name_kana_sei,'　',cui.name_kana_mei)
+				WHEN '2' then cuc.corp_name_kana
+				ELSE null
+			END as contract_name_kana
+			,CASE cu.corporate_individual_flag
+				when '1' then cui.email
+				when '2' then cuc.contact_email
+				ELSE null
+			END as contract_email
+		FROM contracts co JOIN customers cu
+				ON co.tenant_id=cu.tenant_id AND co.contractor_customer_id = cu.customer_id
+			LEFT OUTER JOIN customers_individual cui
+				ON co.tenant_id=cui.tenant_id AND co.contractor_customer_id = cui.customer_id AND cu.corporate_individual_flag='1'
+			LEFT OUTER JOIN customers_corporate cuc
+				ON co.tenant_id=cuc.tenant_id AND co.contractor_customer_id = cuc.customer_id AND cu.corporate_individual_flag='2'
+		) c 
+		ON mr.tenant_id=c.tenant_id AND mr.contract_no=c.contract_no AND mr.contract_branch_no=c.contract_branch_no
+	</sql>
+	<sql id="sql_searchMaintenanceRequests">
+		WHERE mr.tenant_id=#{tenantId}
+			<if test="requestNo != null">AND mr.request_no=#{requestNo}</if>
+			<if test="contractNo != null">AND mr.contract_no=#{contractNo}</if>
+		<if test="contractNo == null">
+			<if test="from != null">AND mr.received_date <![CDATA[>=]]> FROM_UNIXTIME(#{from}/1000)</if>
+			<if test="to != null">AND mr.received_date <![CDATA[<=]]> FROM_UNIXTIME(#{to}/1000)</if>
+			<if test="transactionCodeList != null and transactionCodeList.size!=0">AND mr.transaction_code in
+				<foreach item="item" collection="transactionCodeList" separator="," open="(" close=")">#{item}</foreach></if>
+			<if test="requestStatusList != null and requestStatusList.size!=0">AND mr.request_status in
+				<foreach item="item" collection="requestStatusList" separator="," open="(" close=")">#{item}</foreach></if>
+			<if test="name != null">AND (c.contract_name_knj like '%${name}%' OR c.contract_name_kana like '%${name}%')</if>
+		</if>
+	</sql>
+	
+	<select id="searchMaintenanceRequests"  resultType="MaintenanceRequestsVo" parameterType="hashmap">
+		SELECT 
+			mr.request_no as requestNo
+			,mr.contract_no as contractNo
+		    ,mr.contract_branch_no as contractBranchNo
+		    ,c.contract_name_knj as contractNameKnj
+		    ,c.contract_name_kana as contractNameKana
+		    ,mr.transaction_code as transactionCode
+		    ,mr.request_status as requestStatus
+		    ,mr.application_date as applicationDate
+		    ,mr.received_date as receivedDate
+		    ,mr.created_at as createdAt
+		<include refid="sql_fromMaintenanceRequests"></include>
+		<include refid="sql_searchMaintenanceRequests"></include>
+		ORDER BY
+		<if test='sortColumn != null'>${sortColumn}
+			<if test='sortType != null'> ${sortType}</if>,
+		</if>
+		createdAt DESC
+
+		<if test='rowCount != null'>
+			LIMIT #{page}, #{rowCount}
+		</if>
+	</select>
+	<select id="searchMaintenanceRequestsTotalCount"  resultType="int" parameterType="hashmap">
+		SELECT count(*)
+		<include refid="sql_fromMaintenanceRequests"></include>
+		<include refid="sql_searchMaintenanceRequests"></include>
+	</select>
+	<select id="selectMaintenanceRequests"  resultType="MaintenanceRequestsVo" parameterType="hashmap">
+		SELECT 
+			mr.requestNo
+			,mr.contractNo
+		    ,mr.contractBranchNo
+		    ,mr.contractNameKnj
+		    ,mr.contractNameKana
+		    ,mr.contractEmail
+		    ,mr.salesPlanCode
+		    ,mr.salesPlanTypeCode
+		    ,mr.issueDate
+		    ,mr.transactionCode
+		    ,mr.requestStatus
+		    ,mr.receivedDate
+		    ,mr.communicationColumn
+		    ,mr.firstAssessmentResults
+		    ,mr.commentUnderweiter1
+		    ,mr.secondAssessmentResults
+		    ,mr.commentUnderweiter2
+		    ,mr.emailForNotification
+		    ,mr.applicationDate
+		   	,mr.terminationBaseDate
+		   	,mr.paymentMethodCode
+		    ,mr.bankCode
+		    ,mr.bankBranchCode
+		    ,mr.bankAccountType
+		    ,mr.bankAccountNo
+		    ,mr.bankAccountName
+		    ,mr.relationship
+		    ,mr.billingInfo
+		    ,ra.refund_amount as refundAmount
+		    ,ra.total_refund_amount as totalRefundAmount
+		    ,ra.cash_value as cashValue
+		    ,mr.updateCount
+		FROM (
+			SELECT
+				mr.tenant_id as tenantId
+				,mr.request_no as requestNo
+				,mr.contract_no as contractNo
+			    ,mr.contract_branch_no as contractBranchNo
+			    ,c.contract_name_knj as contractNameKnj
+			    ,c.contract_name_kana as contractNameKana
+			    ,c.contract_email as contractEmail
+			    ,c.sales_plan_code as salesPlanCode
+			    ,c.sales_plan_type_code as salesPlanTypeCode
+			    ,c.issue_date as issueDate
+			    ,c.relationship
+			    ,IFNULL(mr.billing_info, c.billing_info) as billingInfo
+			    ,mr.transaction_code as transactionCode
+			    ,mr.request_status as requestStatus
+			    ,mr.received_date as receivedDate
+			    ,mr.communication_column as communicationColumn
+			    ,mr.first_assessment_results as firstAssessmentResults
+			    ,mr.comment_underweiter1 as commentUnderweiter1
+			    ,mr.second_assessment_results as secondAssessmentResults
+			    ,mr.comment_underweiter2 as commentUnderweiter2
+			    ,mr.email_for_notification as emailForNotification
+			    ,mr.application_date as applicationDate
+			    ,mr.termination_base_date as terminationBaseDate
+			    ,mr.payment_method_code as paymentMethodCode
+			    ,mr.bank_code as bankCode
+			    ,mr.bank_branch_code as bankBranchCode
+			    ,mr.bank_account_type as bankAccountType
+			    ,mr.bank_account_no as bankAccountNo
+			    ,mr.bank_account_name as bankAccountName
+			    ,mr.update_count as updateCount
+			<include refid="sql_fromMaintenanceRequests"></include>) mr
+		LEFT OUTER JOIN refund_amount ra
+			ON mr.tenantId=ra.tenant_id AND mr.contractNo=ra.contract_no AND mr.contractBranchNo=ra.contract_branch_no AND mr.requestNo=ra.request_no
+		WHERE mr.tenantId=#{tenantId} AND mr.requestNo=#{requestNo}
+	</select>
+	<select id="selectRefundAmountInfo"  resultType="MaintenanceRequestsVo" parameterType="hashmap">
+		SELECT 
+		    ra.*,
+		    ra.bank_account_holder as bank_account_name
+		FROM maintenance_requests mr JOIN refund_amount ra
+			ON mr.tenant_id=ra.tenant_id AND mr.contract_no=ra.contract_no AND mr.contract_branch_no=ra.contract_branch_no AND mr.request_no=ra.request_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+	<select id="selectSalesProducts"  resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			*
+		FROM sales_products sp JOIN (
+			SELECT
+				c.tenant_id, c.sales_plan_code, c.sales_plan_type_code
+			FROM maintenance_requests mr JOIN contracts c
+			ON mr.tenant_id=c.tenant_id AND mr.contract_no=c.contract_no AND mr.contract_branch_no=c.contract_branch_no
+			WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}) c
+		ON sp.tenant_id=c.tenant_id AND sp.sales_plan_code=c.sales_plan_code AND sp.sales_plan_type_code=c.sales_plan_type_code
+	</select>
+	<select id="selectContentsPaymentMethod"  resultType="string" parameterType="hashmap">
+		SELECT payment_method 
+		FROM contracts c JOIN maintenance_requests mr
+		ON c.contract_no=mr.contract_no AND c.contract_branch_no=mr.contract_branch_no AND c.tenant_id=mr.tenant_id
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+	<select id="selectTransactionCode" resultType="VoHashMap" parameterType="hashmap">
+		SELECT tenant_id, transaction_code FROM maintenance_requests WHERE tenant_id=#{tenantId} AND request_no=#{requestNo}
+	</select>
+	<select id="selectMaintenanceRequestsStatus"  resultType="string" parameterType="hashmap">
+		SELECT request_status as requestStatus FROM maintenance_requests WHERE tenant_id=#{tenantId} AND request_no=#{requestNo}
+	</select>
+	<update id="updateFirstMaintenanceRequests" parameterType="hashmap">
+		UPDATE
+			maintenance_requests
+		SET
+			request_status='1',
+			<if test='paymentMethodCode != null'>
+			payment_method_code = #{paymentMethodCode},
+				<if test='paymentMethodCode == "4"'>
+				bank_code = #{bankCode},
+				bank_branch_code = #{bankBranchCode},
+				bank_account_type = #{bankAccountType},
+				bank_account_no = #{bankAccountNo},
+				bank_account_name = #{bankAccountName},
+					<if test='billingInfo != null'>
+						billing_info = #{billingInfo},
+					</if>
+				</if>
+			</if>
+			<if test='emailForNotification != null'>email_for_notification=#{emailForNotification},</if>
+			<if test='applyDate != null'>apply_date=FROM_UNIXTIME(#{applyDate}/1000),</if>
+			<if test='terminationBaseDate != null'>termination_base_date=FROM_UNIXTIME(#{terminationBaseDate}/1000),</if>
+			communication_column = #{communicationColumn},
+			first_assessment_results = #{firstAssessmentResults},
+			comment_underweiter1 = #{commentUnderweiter1},
+			update_count=update_count+1,
+			updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND request_no=#{requestNo} AND update_count=#{updateCount}
+	</update>
+	<update id="updateSecondMaintenanceRequests" parameterType="hashmap">
+		UPDATE
+			maintenance_requests
+		SET
+			request_status=CASE 
+				WHEN #{secondAssessmentResults}='00' AND first_assessment_results='00' THEN '2' 
+				WHEN #{secondAssessmentResults}='00' AND first_assessment_results='01' THEN 'C' 
+				WHEN #{secondAssessmentResults}='00' AND first_assessment_results='02' THEN 'I' 
+				WHEN #{secondAssessmentResults}='01' THEN '0' ELSE '0' END,
+			second_assessment_results = #{secondAssessmentResults},
+			comment_underweiter2 = #{commentUnderweiter2},
+			<if test='terminationBaseDate != null'>termination_base_date = #{terminationBaseBate},</if>
+			apply_date=#{onlineDate},
+			update_count=update_count+1
+			,updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND request_no=#{requestNo} AND update_count=#{updateCount}
+	</update>
+	<insert id="insertRefundAmount" parameterType="hashmap" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO refund_amount
+		(
+			tenant_id
+			,request_no
+			,contract_no
+			,contract_branch_no
+			,active_inactive
+			,pay_reason
+			,pay_method
+			,bank_code
+			,bank_branch_code
+			,bank_account_type
+			,bank_account_no
+			,bank_account_holder
+			,refund_amount
+			,total_refund_amount
+			,surrender_charge
+			,created_by
+		)
+		SELECT 
+			#{tenantId}
+		    ,m.request_no
+		    ,c.contract_no
+			,c.contract_branch_no
+			,'A'
+		    ,CASE transaction_code WHEN 41 THEN '1' WHEN 44 THEN '2' WHEN 42 THEN '3' ELSE NULL END
+		    ,'1'
+		    ,#{bankCode}
+		    ,#{bankBranchCode}
+		    ,#{bankAccountType}
+		    ,#{bankAccountNo}
+		    ,#{bankAccountName}
+		    ,#{refundAmount}
+		    ,#{totalRefundAmount}
+		    ,IFNULL(#{surrenderCharge},0)
+		    ,#{updatedBy}
+		FROM contracts c JOIN maintenance_requests m
+		ON c.tenant_id=m.tenant_id AND c.contract_no=m.contract_no AND c.contract_branch_no=m.contract_branch_no
+		WHERE m.tenant_id=#{tenantId} AND m.request_no=#{requestNo}
+		ON DUPLICATE KEY UPDATE
+			bank_code=#{bankCode}
+			,bank_code=#{bankCode}
+			,bank_branch_code=#{bankBranchCode}
+			,bank_account_type=#{bankAccountType}
+			,bank_account_no=#{bankAccountNo}
+			,bank_account_holder=#{bankAccountName}
+			,refund_amount=#{refundAmount}
+			,total_refund_amount=#{totalRefundAmount}
+			,surrender_charge=IFNULL(#{surrenderCharge},0)
+			,update_count=refund_amount.update_count+1
+			,updated_by=#{updatedBy}
+	</insert>
+	<update id="updateSecondRefundAmount" parameterType="hashmap">
+		UPDATE
+			refund_amount r JOIN maintenance_requests m
+		ON r.tenant_id=m.tenant_id AND r.contract_no=m.contract_no AND r.contract_branch_no=m.contract_branch_no AND r.request_no=m.request_no
+		SET
+			r.due_date=#{dueDate}
+			<if test='paymentDate != null'>,r.payment_date=#{paymentDate}</if>
+			<if test='refundAmount != null'>
+				,r.refund_amount=#{refundAmount}
+				,r.total_refund_amount=#{refundAmount}
+			</if>
+			,r.update_count=r.update_count+1
+		WHERE m.tenant_id=#{tenantId} AND m.request_no=#{requestNo}
+	</update>
+	<update id="updateContractsStatus" parameterType="hashmap">
+		UPDATE
+			contracts c JOIN maintenance_requests m
+		ON c.tenant_id=m.tenant_id AND c.contract_no=m.contract_no AND c.contract_branch_no=m.contract_branch_no
+		SET
+			c.contract_status=#{contractStatus}
+			,c.termination_date=FROM_UNIXTIME(#{terminationBaseDate}/1000)
+			,c.termination_base_date=#{onlineDate}
+			,c.update_count=c.update_count+1
+		WHERE m.tenant_id=#{tenantId} AND m.request_no=#{requestNo}
+	</update>
+	<update id="updateCustomerEmail" parameterType="hashmap">
+		UPDATE contracts co JOIN customers cu
+			ON co.contractor_customer_id = cu.customer_id AND co.tenant_id=cu.tenant_id
+		LEFT OUTER JOIN customers_individual cui
+			ON co.contractor_customer_id = cui.customer_id AND cu.corporate_individual_flag=1 AND cu.tenant_id=cui.tenant_id
+		LEFT OUTER JOIN customers_corporate cuc
+			ON co.contractor_customer_id = cuc.customer_id AND cu.corporate_individual_flag=2 AND cu.tenant_id=cuc.tenant_id
+		SET
+			cui.email=#{email}
+			,cuc.contact_email=#{email}
+			,cui.update_count=IFNULL(cui.update_count,0)+1
+            ,cuc.update_count=IFNULL(cuc.update_count,0)+1
+		WHERE contract_no=#{contractNo} AND co.tenant_id=#{tenantId} AND co.contract_branch_no=#{contractBranchNo}
+	</update>
+	<select id="selectRefundAmount"  resultType="long" parameterType="hashmap">
+		SELECT ceil(CASE WHEN mr.transaction_code=42 THEN
+				(SELECT IFNULL(sum(ph.total_gross_premium),0)
+					FROM premium_headers ph
+					WHERE ph.tenant_id=mr.tenant_id AND ph.contract_no=mr.contract_no AND ph.contract_branch_no=mr.contract_branch_no)
+		    WHEN frequency='12' THEN
+				(SELECT IFNULL(sum(ph.total_gross_premium),0)
+				FROM premium_headers ph
+				WHERE ph.tenant_id=mr.tenant_id AND ph.contract_no=mr.contract_no AND ph.contract_branch_no=mr.contract_branch_no
+				AND DATE_FORMAT(FROM_UNIXTIME(#{terminationBaseDate}/1000),'%Y%m')<![CDATA[<]]>ph.premium_billing_period AND ph.premium_status='M')
+			WHEN (frequency='01' OR frequency='00') THEN
+				((12-(PERIOD_DIFF(DATE_FORMAT(FROM_UNIXTIME(#{terminationBaseDate}/1000), '%Y%m')
+				,DATE_FORMAT(issue_date, '%Y%m')) +1))/12) * total_premium
+			END) as total_premium
+		FROM maintenance_requests mr JOIN contracts c
+		ON mr.tenant_id=c.tenant_id AND mr.contract_no=c.contract_no AND mr.contract_branch_no=c.contract_branch_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+	
+	<select id="selectRefundAmountPm001"  resultType="long" parameterType="hashmap">
+		SELECT ceil(
+			CASE WHEN f.frequency='01' THEN 
+				((DATEDIFF(c.expiration_date
+				,FROM_UNIXTIME(#{terminationBaseDate}/1000)) + 1)/365) * c.total_premium +
+				(SELECT IFNULL(sum(ph.total_gross_premium),0)
+					FROM premium_headers ph
+					WHERE ph.tenant_id=mr.tenant_id AND ph.contract_no=mr.contract_no AND ph.contract_branch_no=mr.contract_branch_no
+					AND c.expiration_date <![CDATA[<]]>ph.premium_billing_period AND ph.premium_status='M')
+			ELSE 0
+			END) as total_premium
+		FROM 
+			maintenance_requests mr JOIN contracts c ON mr.tenant_id=c.tenant_id 
+				AND mr.contract_no=c.contract_no 
+				AND mr.contract_branch_no=c.contract_branch_no
+			JOIN frequencies f ON c.contract_no=f.contract_no
+				AND c.tenant_id=f.tenant_id
+				AND f.start_date <![CDATA[<=]]> FROM_UNIXTIME(#{terminationBaseDate}/1000) 
+				AND f.end_date >= FROM_UNIXTIME(#{terminationBaseDate}/1000)
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+
+    <select id="selectRefundAmountSm001"  resultType="hashmap" parameterType="hashmap">
+        SELECT 
+            (CASE WHEN f.frequency='00' THEN (TIMESTAMPDIFF(MONTH,c.issue_date,FROM_UNIXTIME(#{terminationBaseDate}/1000)))
+            ELSE 0
+            END) as refund_month,
+            c.total_premium
+         FROM 
+            maintenance_requests mr JOIN contracts c ON mr.tenant_id=c.tenant_id 
+                AND mr.contract_no=c.contract_no 
+                AND mr.contract_branch_no=c.contract_branch_no
+            JOIN frequencies f ON c.contract_no=f.contract_no
+                AND c.tenant_id=f.tenant_id
+                AND f.start_date <![CDATA[<=]]> FROM_UNIXTIME(#{terminationBaseDate}/1000) 
+                AND f.end_date >= FROM_UNIXTIME(#{terminationBaseDate}/1000)
+        WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+    </select>
+	
+	<!-- OC008 受取人 -->
+	<select id="selectBeneficiaries"  resultType="BeneficialiesVo" parameterType="hashmap">
+		SELECT 
+			null
+			,b.contract_no
+			,b.contract_branch_no
+			,b.role_type
+			,b.role_sequence_no
+			,b.corporate_individual_flag
+			,b.name_knj_sei
+			,b.name_knj_mei
+			,b.name_kana_sei
+			,b.name_kana_mei
+			,b.share
+			,b.rel_ship_to_insured
+			,b.sex
+			,b.date_of_birth
+			,b.addr_zip_code
+			,b.addr_knj_pref
+			,b.addr_knj_1
+			,b.addr_knj_2
+		FROM beneficiaries b JOIN maintenance_requests mr
+		ON b.tenant_id=mr.tenant_id AND b.contract_no=mr.contract_no AND b.contract_branch_no=mr.contract_branch_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+		AND not exists(SELECT 1 FROM maintenance_requests_beneficiaries WHERE tenant_id=#{tenantId} AND request_no=#{requestNo})
+		AND start_date <![CDATA[<= #{onlineDate} AND (b.end_date is null OR b.end_date>=#{onlineDate})]]>
+		UNION ALL
+		SELECT 
+			b.id
+			,mr.contract_no
+			,mr.contract_branch_no
+			,b.role_type
+			,b.role_sequence_no
+			,b.corporate_individual_flag
+			,b.name_knj_sei
+			,b.name_knj_mei
+			,b.name_kana_sei
+			,b.name_kana_mei
+			,b.share
+			,b.rel_ship_to_insured
+			,b.sex
+			,b.date_of_birth
+			,b.addr_zip_code
+			,b.addr_knj_pref
+			,b.addr_knj_1
+			,b.addr_knj_2
+		FROM maintenance_requests_beneficiaries b JOIN maintenance_requests mr
+		ON b.tenant_id=mr.tenant_id AND b.request_no=mr.request_no AND b.before_after='A'
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</select>
+	<delete id="deleteMaintenanceRequestsBeneficiaries" parameterType="hashmap">
+		DELETE FROM maintenance_requests_beneficiaries
+		WHERE <foreach item="item" collection="beneficiariesList" open='id not in (' close=")AND " separator=",">#{item.id}</foreach>
+		tenant_id=#{tenantId} AND request_no=#{requestNo}
+	</delete>
+	<update id="updateMaintenanceRequestsBeneficiaries" parameterType="hashmap">
+		UPDATE maintenance_requests_beneficiaries
+		SET corporate_individual_flag=#{corporateIndividualFlag}
+			,name_knj_sei=#{nameKnjSei}
+			,name_knj_mei=#{nameKnjMei}
+			,name_kana_sei=#{nameKanaSei}
+			,name_kana_mei=#{nameKanaMei}
+			,share=#{share}
+			,rel_ship_to_insured=#{relShipToInsured}
+			,sex=#{sex}
+			,date_of_birth=FROM_UNIXTIME(#{dateOfBirth}/1000)
+			,addr_zip_code=#{addrZipCode}
+			,addr_knj_pref=#{addrKnjPref}
+			,addr_knj_1=#{addrKnj1}
+			,addr_knj_2=#{addrKnj2}
+			,update_count=update_count+1
+			,updated_by=#{updatedBy}
+		WHERE id=#{id}
+	</update>
+	<insert id="insertMaintenanceRequestsBeneficiaries" parameterType="hashmap">
+		INSERT INTO maintenance_requests_beneficiaries
+		(
+			tenant_id
+			,request_no
+			,before_after
+			,role_type
+			,role_sequence_no
+			,corporate_individual_flag
+			,name_knj_sei
+			,name_knj_mei
+			,name_kana_sei
+			,name_kana_mei
+			,share
+			,rel_ship_to_insured
+			,sex
+			,date_of_birth
+			,addr_zip_code
+			,addr_knj_pref
+			,addr_knj_1
+			,addr_knj_2
+			,created_by
+		)
+		SELECT
+			#{tenantId}
+			,#{requestNo}
+			,#{beforeAfter}
+			,#{roleType}
+			,IFNULL(max(b.role_sequence_no), 0)+1
+			,#{corporateIndividualFlag}
+			,#{nameKnjSei}
+			,#{nameKnjMei}
+			,#{nameKanaSei}
+			,#{nameKanaMei}
+			,#{share}
+			,#{relShipToInsured}
+			,#{sex}
+			,FROM_UNIXTIME(#{dateOfBirth}/1000)
+			,#{addrZipCode}
+			,#{addrKnjPref}
+			,#{addrKnj1}
+			,#{addrKnj2}
+			,#{updatedBy}
+		FROM maintenance_requests_beneficiaries b RIGHT JOIN maintenance_requests mr
+		ON b.tenant_id=mr.tenant_id AND b.request_no=mr.request_no AND b.before_after='A'
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+		GROUP BY mr.tenant_id, mr.request_no
+	</insert>
+	<update id="updateBeneficiariesForDelete" parameterType="hashmap">
+		UPDATE beneficiaries b JOIN maintenance_requests mr
+		ON b.tenant_id=mr.tenant_id AND b.contract_no=mr.contract_no AND b.contract_branch_no=mr.contract_branch_no
+		SET b.end_date=DATE_ADD(#{onlineDate}, interval -1 day)
+			,b.status='I'
+			,b.update_count=b.update_count+1
+			,b.updated_by=#{updatedBy}
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+	</update>
+	<insert id="insertBeneficiaries" parameterType="hashmap">
+		INSERT INTO beneficiaries
+		(
+			tenant_id
+			,contract_no
+			,contract_branch_no
+			,role_type
+			,role_sequence_no
+			,corporate_individual_flag
+			,start_date
+			,status
+			,name_knj_sei
+			,name_knj_mei
+			,name_kana_sei
+			,name_kana_mei
+			,share
+			,rel_ship_to_insured
+			,sex
+			,date_of_birth
+			,addr_zip_code
+			,addr_knj_pref
+			,addr_knj_1
+			,addr_knj_2
+			,created_by
+		)
+		VALUE<foreach item="item" collection="beneficiariesList" separator="),(" open="(" close=")">
+			#{tenantId}
+			,#{item.contractNo}
+			,#{item.contractBranchNo}
+			,#{item.roleType}
+			,#{item.roleSequenceNo}
+			,#{item.corporateIndividualFlag}
+			,#{onlineDate}
+			,'A'
+			,#{item.nameKnjSei}
+			,#{item.nameKnjMei}
+			,#{item.nameKanaSei}
+			,#{item.nameKanaMei}
+			,#{item.share}
+			,#{item.relShipToInsured}
+			,#{item.sex}
+			,#{item.dateOfBirth}
+			,#{item.addrZipCode}
+			,#{item.addrKnjPref}
+			,#{item.addrKnj1}
+			,#{item.addrKnj2}
+			,#{updatedBy}
+		</foreach>
+	</insert>
+	<select id="selectBeneficiariesForBeforeInsert"  resultType="VoHashMap" parameterType="hashmap">
+		SELECT 
+			b.tenant_id
+			,mr.request_no
+			,b.role_type
+			,b.role_sequence_no
+			,b.corporate_individual_flag
+			,b.name_knj_sei
+			,b.name_knj_mei
+			,b.name_kana_sei
+			,b.name_kana_mei
+			,b.share
+			,b.rel_ship_to_insured
+			,b.sex
+			,b.date_of_birth
+			,b.addr_zip_code
+			,b.addr_knj_pref
+			,b.addr_knj_1
+			,b.addr_knj_2
+		FROM beneficiaries b JOIN maintenance_requests mr
+		ON b.tenant_id=mr.tenant_id AND b.contract_no=mr.contract_no AND b.contract_branch_no=mr.contract_branch_no
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+		AND start_date <![CDATA[<= #{onlineDate} AND (b.end_date is null OR b.end_date>=#{onlineDate})]]>
+	</select>
+	<select id="selectRefundAmountTerminationBaseDate"  resultType="String" parameterType="hashmap">
+		SELECT 
+			c1.contract_no
+		FROM 
+			maintenance_requests mr JOIN contracts c1 ON mr.tenant_id=c1.tenant_id 
+				AND mr.contract_no=c1.contract_no 
+				AND mr.contract_branch_no='01'
+				JOIN (SELECT max(contract_branch_no) ,expiration_date, tenant_id,contract_no FROM contracts
+				GROUP BY contract_no, tenant_id) c2 ON c2.tenant_id=mr.tenant_id
+				AND c2.contract_no=mr.contract_no
+			JOIN frequencies f ON c1.contract_no=f.contract_no
+				AND c1.tenant_id=f.tenant_id
+				AND f.start_date <![CDATA[<=]]> FROM_UNIXTIME(#{terminationBaseDate}/1000) 
+				AND f.end_date >= FROM_UNIXTIME(#{terminationBaseDate}/1000)
+		WHERE mr.tenant_id=#{tenantId} AND mr.request_no=#{requestNo}
+			AND  FROM_UNIXTIME(#{terminationBaseDate}/1000) >= c1.issue_date 
+			AND FROM_UNIXTIME(#{terminationBaseDate}/1000) <![CDATA[<]]> c2.expiration_date
+	</select>
+	<update id="updateContractsBillingInfo" parameterType="hashmap">
+		UPDATE
+			contracts
+		SET
+			billing_info=#{billingInfo},
+			update_count=update_count+1,
+			updated_by=#{updatedBy}
+		WHERE tenant_id=#{tenantId} AND contract_no=#{contractNo} AND contract_branch_no=#{contractBranchNo} 
+	</update>
+	<select id="selectMaintenanceRequestsServiceObjests"  resultType="VoHashMap" parameterType="hashmap">
+		SELECT
+			sequence_no,
+			data as inherent,
+			tx_type,
+			before_after
+		FROM maintenance_requests_service_objects
+		WHERE tenant_id=#{tenantId} AND request_no=#{requestNo} AND before_after='A'
+	</select>
+	<insert id="insertMaintenanceRequestsServiceObjests" parameterType="hashmap">
+		INSERT INTO maintenance_requests_service_objects
+		(
+			tenant_id
+			,request_no
+			,data
+			,sequence_no
+			,tx_type
+			,before_after
+			,created_by
+		)
+		VALUE<foreach item="item" collection="inherentList" separator="),(" open="(" close=")">
+			#{tenantId}
+			,#{requestNo}
+			,#{item.inherent}
+			,#{item.sequenceNo}
+			,#{item.txType}
+			,#{item.beforeAfter}
+			,#{updatedBy}
+		</foreach>
+	</insert>
+	<delete id="removeMaintenanceRequestsServiceObjests" parameterType="hashmap">
+		DELETE FROM maintenance_requests_service_objects
+		WHERE tenant_id=#{tenantId} AND request_no=#{requestNo} AND before_after='A'
+	</delete>
+</mapper>

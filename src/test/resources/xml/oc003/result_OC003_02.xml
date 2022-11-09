@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <maintenance_requests tenant_id='1' request_no='0000000000000000001213' contract_no='0000000101' second_assessment_results='00' comment_underweiter2='1次査定結果を承認。&#xD;登録されている契約者のメールアドレスと申請時のメールアドレスが異なっているため、メールアドレスを変更しました。' request_status='I' update_count='3'/>
+	<notifications notification_date='2023-03-02' contract_no='0000000101' contract_branch_no='02' template_number='HZ_011' notification_implementation='0' comment='支店コードに該当する視点がありません。&#xD;ご確認のうえ正しい支店コードをご連絡ください。' sendee='宮原　環' notification_method='00' email='ichainbase.test01@gmail.com' data='{}'/>
+	<customers_corporate contact_email='ichainbase.test01@gmail.com'/>
+	<contract_log contract_no='0000000101' contract_branch_no='02' sequence_no='2' log_type='0' reason_group_code='31' reason_code='020' contact_transaction_code='05' description='保全（保全）請求　不備' program_name='SC_008'/>
+</dataset>

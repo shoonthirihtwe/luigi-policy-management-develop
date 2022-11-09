@@ -1,0 +1,39 @@
+{
+	"requestNo": "0000000000000000000004",
+	"contractNo": "0000000104",
+	"firstAssessmentResults": "00",
+	"commentUnderweiter1": "処理します。",
+	"communicationColumn": "契約者を個人に変更します。",
+	"contractBranchNo": "01",
+	"contractorCustomer": {
+		"corporateIndividualFlag": "1",
+		"nameKnjSei": "個人",
+		"nameKnjMei": "一之一",
+		"nameKanaSei": "テストコジン",
+		"nameKanaMei": "イチノイチ",
+		"sex": "1",
+		"dateOfBirth": "69174000000",
+		"addrZipCode": "151-0072",
+		"addrKnjPref": "東京都",
+		"addrKnj1": "渋谷区幡谷",
+		"addrKnj2": "8330",
+		"addrTel1": "03-3104-7244",
+		"email": "ichainbase.test01@gmail.com"
+	},
+	"insuredCustomer": {
+		"corporateIndividualFlag": "1",
+		"nameKnjSei": "個人",
+		"nameKnjMei": "一之一",
+		"nameKanaSei": "テストコジン",
+		"nameKanaMei": "イチノイチ",
+		"sex": "1",
+		"dateOfBirth": "69174000000",
+		"addrZipCode": "151-0072",
+		"addrKnjPref": "東京都",
+		"addrKnj1": "渋谷区幡谷",
+		"addrKnj2": "8330",
+		"addrTel1": "03-3104-7244",
+		"email": "ichainbase.test01@gmail.com"
+	},
+	"updateCount": 1
+}

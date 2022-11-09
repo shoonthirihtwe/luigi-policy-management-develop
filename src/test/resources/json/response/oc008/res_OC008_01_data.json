@@ -1,0 +1,36 @@
+{
+	"receivedDate": "/Date(1627743600000)/",
+	"contractNo": "0000000101",
+	"contractBranchNo": "01",
+	"contractNameKnj": "テスト個人　一之一",
+	"transactionCode": "14",
+	"contractEmail": "ichainbase.test01@gmail.com",
+	"documentsList": [],
+	"beneficiariesList": [
+		{
+			"corporateIndividualFlag": "1",
+			"nameKanaSei": "ウケトリニンコジン",
+			"nameKanaMei": "イチノイチ",
+			"nameKnjSei": "受取人個人",
+			"nameKnjMei": "一之一",
+			"relShipToInsured": "04",
+			"share": "34"
+		},
+		{
+			"corporateIndividualFlag": "2",
+			"nameKanaSei": "カブシキガイシャウケトリニンイチノニ",
+			"nameKnjSei": "株式会社受取人一之二",
+			"relShipToInsured": "10",
+			"share": "33"
+		},
+		{
+			"corporateIndividualFlag": "1",
+			"nameKanaSei": "ウケトリニンコジン",
+			"nameKanaMei": "イチノサン",
+			"nameKnjSei": "受取人個人",
+			"nameKnjMei": "一之三",
+			"relShipToInsured": "04",
+			"share": "33"
+		}
+	]
+}

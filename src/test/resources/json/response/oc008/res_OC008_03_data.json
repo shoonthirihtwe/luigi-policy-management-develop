@@ -1,0 +1,20 @@
+{
+	"receivedDate": "/Date(1627743600000)/",
+	"contractNo": "0000000103",
+	"contractBranchNo": "01",
+	"contractNameKnj": "テスト個人　一之三",
+	"transactionCode": "14",
+	"contractEmail": "ichainbase.test03@gmail.com",
+	"documentsList": [],
+	"beneficiariesList": [
+		{
+			"corporateIndividualFlag": "1",
+			"nameKanaSei": "ウケトリニンコジン",
+			"nameKanaMei": "イチノイチ",
+			"nameKnjSei": "受取人個人",
+			"nameKnjMei": "一之一",
+			"relShipToInsured": "01",
+			"share": "100"
+		}
+	]
+}

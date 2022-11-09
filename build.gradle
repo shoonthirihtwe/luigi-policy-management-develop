@@ -1,0 +1,126 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.0'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'checkstyle'
+}
+
+System.setProperty("org.checkstyle.google.suppressionfilter.config", "$projectDir/checkstyle/suppressions.xml")
+checkstyle {
+    configFile file("$projectDir/checkstyle/google_checks.xml")
+    toolVersion '8.42'
+    maxWarnings 0
+    ignoreFailures false
+    showViolations true
+}
+checkstyleMain.source = 'src/main/java'
+checkstyleTest.source = 'src/test/java'
+
+group = 'jp.co.ichain'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '15'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+maven {
+    url "http://nexus-service.default:80/repository/maven-proxy/"
+    allowInsecureProtocol true
+  }
+	mavenCentral()
+}
+
+dependencies {
+	// spring
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.session:spring-session-core'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.7'
+    
+    // jackson
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.12.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.3'
+
+    // javax
+    implementation group: 'javax.ejb', name: 'javax.ejb-api', version: '3.2.2'
+    implementation group: 'javax.inject', name: 'javax.inject', version: '1'
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.12'
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    
+    // lombok
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.20'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.20'
+    
+	// DB
+	implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '2.2.0'
+    implementation group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4.1', version: '1.16'
+	
+	// test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.dbunit:dbunit:2.7.0'
+	implementation 'org.dbunit:dbunit:2.7.0'
+	
+	// aws sdk for java
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.988'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.11.988'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-cognitoidp', version: '1.11.988'
+    
+    // tool
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7'
+    implementation group: 'org.json', name: 'json', version: '20210307'
+    
+    // swagger2
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    
+    // AWS
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.17'
+    
+    // file
+    implementation group: 'org.apache.tika', name: 'tika-parsers', version: '1.26'
+
+    // clamav
+    implementation group: 'fi.solita.clamav', name: 'clamav-client', version: '1.0.1'
+    
+    //csv
+    implementation group: 'com.opencsv', name: 'opencsv', version: '5.4'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'luigi2-common/src/main/java'
+        }
+        
+        resources {
+			srcDirs += 'luigi2-common/src/main/resources'
+			srcDirs += 'luigi2-common/src/test/resources'
+			srcDirs += 'luigi2-database/'
+		}
+		output.resourcesDir = 'build/resources/main'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    enabled = false
+}

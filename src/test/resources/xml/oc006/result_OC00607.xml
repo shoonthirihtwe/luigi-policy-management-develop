@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <maintenance_requests tenant_id='1' request_no='0000000000000000000010' contract_no='0000000110' contract_branch_no='01' active_inactive='I' transaction_code='11' request_status='C' application_date='2021-08-01' application_method='W' received_date='2021-08-01' comment_underweiter1='取下げの連絡がありました。' first_assessment_results='01' comment_underweiter2='承認します。' second_assessment_results='00' apply_date='2021-08-01'/>
+	<contract_log tenant_id='1' contract_no='0000000110' contract_branch_no='01' sequence_no='1' log_type='0' reason_group_code='02' reason_code='020' contact_transaction_code='06' description='保全（保全）請求　取下' program_name='SC_023' update_count='1'/>
+	<notifications notification_date='2021-08-02' contract_no='0000000110' contract_branch_no='01' template_number='HZ_012' notification_implementation='0' sendee='テスト個人　一之二' notification_method='00' email='ichainbase.test02@gmail.com' update_count='1'/>
+</dataset>

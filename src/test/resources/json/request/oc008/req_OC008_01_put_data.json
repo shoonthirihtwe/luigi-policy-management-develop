@@ -1,0 +1,40 @@
+{
+    "requestNo":"0000000000000000000001",
+    "communicationColumn":"受取人を変更しました。",
+    "firstAssessmentResults":"00",
+    "commentUnderweiter1":"処理します。",
+    "updateCount":1,
+    "beneficiariesList": [
+            {
+                "roleType": "BD",
+                "corporateIndividualFlag": "1",
+                "nameKanaSei": "ウケトリニンコジン",
+                "nameKanaMei": "イチノイチヘンコウ",
+                "nameKnjSei": "受取人個人",
+                "nameKnjMei": "一之一変更",
+                "share": 30,
+                "relShipToInsured": "04",
+                "roleSequenceNo": 1
+            },
+            {
+                "roleType": "BD",
+                "corporateIndividualFlag": "2",
+                "nameKanaSei": "カブシキガイシャウケトリニンイチノニヘンコウ",
+                "nameKnjSei": "株式会社受取人一之二変更",
+                "share": 30,
+                "relShipToInsured": "10",
+                "roleSequenceNo": 2
+            },
+            {
+                "roleType": "BD",
+                "corporateIndividualFlag": "1",
+                "nameKanaSei": "ウケトリニンコジン",
+                "nameKanaMei": "イチノサンヘンコウ",
+                "nameKnjSei": "受取人個人",
+                "nameKnjMei": "一之三変更",
+                "share": 40,
+                "relShipToInsured": "04",
+                "roleSequenceNo": 3
+            }
+        ]
+}

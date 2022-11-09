@@ -1,0 +1,14 @@
+{
+    "requestNo":"0000002214",
+	"bankCode": "0333",
+    "bankBranchCode":"113",
+	"bankAccountType": "1",
+    "bankAccountNo": "2020202",
+	"bankAccountName": "タマキミヤハラ",
+	"refundAmount": 1200,
+	"emailForNotification": "ichainbase.test02@gmail.com",
+	"communicationColumn": "解約請求書をお送りください。",
+	"firstAssessmentResults": "02",
+	"commentUnderweiter1": "書類不足。",
+    "updateCount":1
+}

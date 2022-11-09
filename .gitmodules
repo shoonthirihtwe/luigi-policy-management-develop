@@ -1,0 +1,6 @@
+[submodule "luigi2-common"]
+	path = luigi2-common
+	url = ../luigi2-common.git
+[submodule "luigi2-database"]
+	path = luigi2-database
+	url = ../luigi2-database.git

@@ -1,0 +1,39 @@
+[
+	{
+		"contractNo": "0000000201",
+		"contractNameKnj": "宮原　環",
+		"receivedDate": "/Date(1659970800000)/",
+		"commentUnderweiter1": "成年後見人の同意書不足。\r再請求を依頼。",
+		"communicationColumn": "解約に必要な書類が不足しています。\r 後見人の同意書をお送りください。",
+		"commentUnderweiter2": "後見人同意は書類2で確認可能。\r差し戻します。",
+        "secondAssessmentResults": "01",
+		"bankCode": "0333",
+		"bankBranchCode": "113",
+		"bankAccountType": "1",
+		"bankAccountNo": "2020202",
+		"bankAccountName": "タマキミヤハラ",
+		"refundAmount": 1200,
+		"contractEmail": "ichainbase.test02@gmail.com",
+		"emailForNotification": "ichainbase.test01@gmail.com",
+		"documentsList": [
+			{
+				"sequenceNo": 1,
+				"documentTitle": "file1.jpg",
+				"documentUrl": "(URL1)",
+				"uploadDate": "/Date(1659970800000)/"
+			},
+			{
+				"sequenceNo": 2,
+				"documentUrl": "(URL2)",
+				"documentTitle": "file2.xlsx",
+				"uploadDate": "/Date(1659970800000)/"
+			},
+			{
+				"sequenceNo": 3,
+				"documentTitle": "file3.pdf",
+				"documentUrl": "(URL3)",
+				"uploadDate": "/Date(1659970800000)/"
+			}
+		]
+	}
+]

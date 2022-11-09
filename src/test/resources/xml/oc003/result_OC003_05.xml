@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <maintenance_requests tenant_id='1' request_no='0000000000000000001214' contract_no='0000000103' payment_method_code='4' bank_code='0333' bank_branch_code='113' bank_account_type='2' bank_account_no='2020202' bank_account_name='タマキミヤハラ' email_for_notification='ichainbase.test02@gmail.com' communication_column='' first_assessment_results='00' comment_underweiter1='添付書類確認済み。&#xD;支店コード入力訂正済み。' request_status='1' update_count='4'/>
+</dataset>

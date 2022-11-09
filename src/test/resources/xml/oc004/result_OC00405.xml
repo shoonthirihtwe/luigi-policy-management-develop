@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<maintenance_requests email_for_notification='ichainbase.test02@gmail.com' communication_column='解約請求書をお送りください。' first_assessment_results='02' comment_underweiter1='書類不足。' request_status='1' />
+</dataset>

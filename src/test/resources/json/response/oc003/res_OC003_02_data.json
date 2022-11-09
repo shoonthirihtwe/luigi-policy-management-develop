@@ -1,0 +1,16 @@
+{
+	"receivedDate": "/Date(1659970800000)/",
+	"contractNo": "0000000101",
+	"contractNameKnj": "宮原　環",
+	"contractEmail": "ichainbase.test02@gmail.com",
+	"paymentMethodCode": "4",
+	"bankCode": "0333",
+	"bankBranchCode": "999",
+	"bankAccountType": "2",
+	"bankAccountNo": "2020202",
+	"bankAccountName": "タマキミヤハラ",
+	"emailForNotification": "ichainbase.test01@gmail.com",
+	"communicationColumn": "支店コードに該当する視点がありません。\rご確認のうえ正しい支店コードをご連絡ください。",
+	"commentUnderweiter1": "該当支店コードなし。\r確認依頼発送。",
+	"firstAssessmentResults": "02"
+}
